@@ -11,11 +11,11 @@
     <hr>
 
     <label for="username"><b>Username</b></label>
-    <input type="text" placeholder="Enter username" name="username" required>
+    <input type="text" placeholder="Enter username" id="username" name="username" required>
     <br></br>
 
     <label for="psw"><b>Password</b></label>
-    <input type="password" placeholder="Enter Password" name="psw" required>
+    <input type="password" placeholder="Enter Password" id="password" name="psw" required>
     <br></br>
 
     <div class="clearfix">
@@ -23,6 +23,10 @@
     </div>
   </div>
 </form>
+<script>
+  sessionStorage.Username = document.getElementById(username);
+  sessionStorage.Password = document.getElementById(password);
+</script>
 </div>
 </body>
 </html>
