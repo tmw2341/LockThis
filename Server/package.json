@@ -1,0 +1,15 @@
+{
+  "name": "lockthis-server",
+  "version": "1.0.0",
+  "description": "a simple server to support communication between the physical locks and the android app",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.ece.iastate.edu/TeamAlexa/LockThis.git"
+  },
+  "author": "Scott Rowekamp",
+  "license": "UNLICENCED"
+}
