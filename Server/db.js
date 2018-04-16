@@ -1,4 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
+const bcrypt = require('bcrypt')
 let db = openDBCon();
 
 function openDBCon(callback) { // open database in memory
@@ -43,22 +44,26 @@ function closeDBCon(db, callback) { // close the database connection
 }
 
 function addUser(name, email, username, pass, callback) { //Add user to database
-  getDB(db => db.run(`INSERT INTO Users(Name, Email, Username, Password) VALUES(?, ?, ?, ?)`, [
-    name, email, username, pass
-  ], function(err) {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    // get the userID
-    console.log(`A user has been inserted with id ${this.lastID}`);
-    return callback(true);
-  }));
+  getDB(db => {
+    // hash password
+    bcrypt.hash(pass, 5, (err, hashed) => {
+      db.run(`INSERT INTO Users(Name, Email, Username, Password) VALUES(?, ?, ?, ?)`, [
+        name, email, username, hashed
+      ], function(err) {
+        if (err) {
+          console.log(err.message);
+          return callback(false);
+        }
+        // get the userID
+        console.log(`A user has been inserted with id ${this.lastID}`);
+        return callback(true);
+      })
+    })
+  })
 }
 
 function removeUser(ID, callback) { //remove users from the database
-  let sql = `DELETE FROM Users
-               WHERE ID = ?`;
+  let sql = `DELETE FROM Users WHERE ID = ?`;
   permissionsByUser(ID, permIds => {
     for (let i = 0; i < permIds.length; i++) {
       removePerm(permIds[i]);
@@ -72,6 +77,39 @@ function removeUser(ID, callback) { //remove users from the database
     console.log(`User with ID ${ID} removed from database`);
     return callback(true);
   }));
+}
+
+function getUserID(username, callback) { //gets all locks associated with user
+  let sql = `SELECT ID id FROM Users WHERE Username = ?`;
+  getDB(db => {
+    db.get(sql, [username], (err, row) => {
+      if (err) {
+        console.log(err.message);
+        return callback(null);
+      } else {
+        return callback(row)
+      }
+    })
+  });
+}
+
+function auth(username, password, callback) {
+  getDB(db => {
+    let sql =  'select ID id, Password password from Users where Username = ?'
+    db.get(sql, [username], (err, row) => {
+      if(err) {
+        console.log(err)
+        return callback(null)
+      } else {
+        // return if no user
+        if(!row) return callback(null)
+        bcrypt.compare(password, row.password, (err, res) => {
+          if(res) return callback(row.id)
+          return callback(null)
+        })
+      }
+    })
+  })
 }
 
 function addLock(ID, callback) { //adds lock to database
@@ -436,31 +474,33 @@ function permissionsByUser(userID, callback) { //gets all permissions associated
 }
 
 module.exports = {
-  initDB:initDB,
-  getDB:getDB,
-  closeDBCon:closeDBCon,
-  addUser:addUser,
-  removeUser:removeUser,
-  addLock:addLock,
-  removeLock:removeLock,
-  addPerm:addPerm,
-  removePerm:removePerm,
-  locksByUser:locksByUser,
-  getLockStatus:getLockStatus,
-  changeLockStatus:changeLockStatus,
-  getUserName:getUserName,
-  editUserName:editUserName,
-  getUserEmail:getUserEmail,
-  editUserEmail:editUserEmail,
-  getUserUsername:getUserUsername,
-  editUserUsername:editUserUsername,
-  getUserPassword:getUserPassword,
-  editUserPassword:editUserPassword,
-  returnAllLocks:returnAllLocks,
-  returnAllUsers:returnAllUsers,
-  returnAllLockStatus:returnAllLockStatus,
-  getLockDesc:getLockDesc,
-  setLockDesc:setLockDesc,
-  permissionsByLock:permissionsByLock,
-  permissionsByUser:permissionsByUser
+  initDB: initDB,
+  getDB: getDB,
+  closeDBCon: closeDBCon,
+  addUser: addUser,
+  removeUser: removeUser,
+  getUserID: getUserID,
+  auth:auth,
+  addLock: addLock,
+  removeLock: removeLock,
+  addPerm: addPerm,
+  removePerm: removePerm,
+  locksByUser: locksByUser,
+  getLockStatus: getLockStatus,
+  changeLockStatus: changeLockStatus,
+  getUserName: getUserName,
+  editUserName: editUserName,
+  getUserEmail: getUserEmail,
+  editUserEmail: editUserEmail,
+  getUserUsername: getUserUsername,
+  editUserUsername: editUserUsername,
+  getUserPassword: getUserPassword,
+  editUserPassword: editUserPassword,
+  returnAllLocks: returnAllLocks,
+  returnAllUsers: returnAllUsers,
+  returnAllLockStatus: returnAllLockStatus,
+  getLockDesc: getLockDesc,
+  setLockDesc: setLockDesc,
+  permissionsByLock: permissionsByLock,
+  permissionsByUser: permissionsByUser
 }

@@ -1,5 +1,6 @@
 const express = require('express');
 var app = express();
+let db = require('./db')
 
 // add json body parser
 app.use(express.json());
@@ -23,8 +24,8 @@ app.use((req, res, next) => {
  */
 
 /**
- * @api {post} /user/create create user
- * @apiName CreateUser
+ * @api {post} /user/add add user
+ * @apiName AddUser
  * @apiGroup users
  * @apiDescription creates a new user account
  * @apiParam {string} name the name used for creating personalized messages
@@ -32,7 +33,32 @@ app.use((req, res, next) => {
  * @apiParam {string} username username of the user
  * @apiParam {string} password the password for the user
  * @apiUse Default
+ * @apiSuccess {string} id the users id
  */
+app.post('/user/add', (req, res) => {
+  if (req.body.name && req.body.email && req.body.username && req.body.password) {
+    // [\w.-]+@[\w.-]+.[\w.-]+
+    if (!(/[\w.-]+@[\w.-]+.[\w.-]+/.test(req.body.email))) {
+      res.status(200).json({success: false, error: "invalid email address"})
+    } else {
+      db.getUserID(req.body.username, (result) => {
+        if (!result) {
+          db.addUser(req.body.name, req.body.email, req.body.username, req.body.password, success => {
+            if (success) {
+              res.status(200).json({success: true})
+            } else {
+              res.status(200).json({success: false, error: "unable to add user"})
+            }
+          })
+        } else {
+          res.status(200).json({success: false, error: "username exists"})
+        }
+      })
+    }
+  } else {
+    res.status(200).json({success: false, error: "bad request"})
+  }
+});
 
 /**
  * @api {post} /user/remove remove user
@@ -42,6 +68,25 @@ app.use((req, res, next) => {
  * @apiUse Login
  * @apiUse Default
  */
+app.post('/user/remove', (req, res) => {
+  if (!(req.body.username && req.body.password)) {
+    res.status(200).json({success: false, error: "invalid request"})
+  } else {
+    db.auth(req.body.username, req.body.password, uid => {
+      if (!uid) {
+        res.status(200).json({success: false, error: "unable to authenticate"})
+      } else {
+        db.removeUser(uid, removed => {
+          if (!removed) {
+            res.status(200).json({success: false, error: "server unable to remove user"})
+          } else {
+            res.status(200).json({success: true})
+          }
+        })
+      }
+    })
+  }
+});
 
 /**
  * @api {post} /user/modify modify user
@@ -55,8 +100,11 @@ app.use((req, res, next) => {
  * @apiParam (Optional) {string} new_password
  * @apiUse Default
  */
+app.post('/user/modify', (req, res) => {
+  res.status(200).json({success: true})
+});
 
- /**
+/**
   * @api {get} /user/locks get locks
   * @apiName GetUserLocks
   * @apiGroup users
@@ -64,6 +112,9 @@ app.use((req, res, next) => {
   * @apiUse Login
   * @apiUse Default
   */
+app.post('/user/locks', (req, res) => {
+  res.status(200).json({success: true})
+});
 
 /**
  * @api {post} /lock/add add lock
@@ -73,6 +124,9 @@ app.use((req, res, next) => {
  * @apiParam (Required) {string} description a short description of the lock
  * @apiUse Default
  */
+app.post('/lock/add', (req, res) => {
+  res.status(200).json({success: true})
+});
 
 /**
  * @api {post} /lock/remove remove lock
@@ -82,6 +136,9 @@ app.use((req, res, next) => {
  * @apiParam (Required) {string} description a short description of the lock
  * @apiUse Default
  */
+app.post('/lock/remove', (req, res) => {
+  res.status(200).json({success: true})
+});
 
 /**
  * @api {post} /lock/modify modify lock
@@ -91,6 +148,9 @@ app.use((req, res, next) => {
  * @apiParam (Required) {string} description a short description of the lock
  * @apiUse Default
  */
+app.post('/lock/modify', (req, res) => {
+  res.status(200).json({success: true})
+});
 
 /**
  * @api {post} /lock/permissions/add add permissions
@@ -102,6 +162,9 @@ app.use((req, res, next) => {
  * @apiParam (Required) {string} new_username the username to add
  * @apiUse Default
  */
+app.post('/lock/permissions/add', (req, res) => {
+  res.status(200).json({success: true})
+});
 
 /**
  * @api {post} /lock/permissions/remove remove permissions
@@ -113,6 +176,9 @@ app.use((req, res, next) => {
  * @apiParam (Required) {string} new_username the username to remove
  * @apiUse Default
  */
+app.post('/lock/permissions/remove', (req, res) => {
+  res.status(200).json({success: true})
+});
 
 /**
  * @api {post} /lock/status get status
@@ -122,11 +188,14 @@ app.use((req, res, next) => {
  * @apiParam (Required) {string} lock_id the lock id
  * @apiUse Default
  */
+app.post('/lock/status', (req, res) => {
+  res.status(200).json({success: true})
+});
 
 app.use('/api', express.static(__dirname + '/docs'));
 
 // default return 404 not found error
-app.use(function(req, res){
+app.use(function(req, res) {
   res.send(404);
 });
 
