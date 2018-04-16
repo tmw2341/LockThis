@@ -5,7 +5,7 @@ let db = require('./db')
 // add json body parser
 app.use(express.json());
 
-// logger
+// logger middle ware
 app.use((req, res, next) => {
   console.log(req.path, req.body);
   next();
@@ -101,7 +101,29 @@ app.post('/user/remove', (req, res) => {
  * @apiUse Default
  */
 app.post('/user/modify', (req, res) => {
-  res.status(200).json({success: true})
+  if(!(req.body.username && req.body.password)) {
+    res.status(200).json({success:false, error:'invalid request'})
+  } else {
+    db.auth(req.body.username, req.body.password, id => {
+      if(!id) {
+        res.status(200).json({success:false, error:'unable to authenticate'})
+      } else {
+        let data = {
+          username:req.body.new_username,
+          password:req.body.new_password,
+          name:req.body.new_name,
+          email:req.body.new_email
+        }
+        db.changeUser(id, data, updated => {
+          if(updated) {
+            res.status(200).json({success:true})
+          } else {
+            res.status(200).json({success:false, error:"server unable to modify user"})
+          }
+        })
+      }
+    })
+  }
 });
 
 /**

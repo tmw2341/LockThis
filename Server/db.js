@@ -95,19 +95,73 @@ function getUserID(username, callback) { //gets all locks associated with user
 
 function auth(username, password, callback) {
   getDB(db => {
-    let sql =  'select ID id, Password password from Users where Username = ?'
+    let sql = 'select ID id, Password password from Users where Username = ?'
     db.get(sql, [username], (err, row) => {
-      if(err) {
+      if (err) {
         console.log(err)
         return callback(null)
       } else {
         // return if no user
-        if(!row) return callback(null)
+        if (!row)
+          return callback(null)
         bcrypt.compare(password, row.password, (err, res) => {
-          if(res) return callback(row.id)
+          if (res)
+            return callback(row.id)
           return callback(null)
         })
       }
+    })
+  })
+}
+
+// used by module for cleaner code
+function _changeUser(id, username, password, name, email, callback) {
+  getDB(db => {
+    let sql = "UPDATE Users SET Username = ?, Password = ?, Name = ?, Email = ? WHERE ID = ?"
+    db.run(sql, [username, password, name, email, id], err => {
+      if(err) {
+        console.log(err)
+        return callback(null)
+      } else {
+        return callback(true)
+      }
+    })
+  })
+}
+
+// modify the user
+// data is a dictionary where if the keys username, password, name, or email are set, they will be used to update the user
+function changeUser(id, data, callback) {
+  getDB(db => {
+    getUserByID(id, user => {
+      let username = data.username
+        ? data.username
+        : user.username
+      let name = data.name
+        ? data.name
+        : user.name
+      let email = data.email
+        ? data.email
+        : user.email
+      if (data.password) {
+        bcrypt.hash(data.password, 5, (err, hashed) => {
+          _changeUser(id, username, hashed, name, email, callback)
+        })
+      } else {
+        _changeUser(id, username, user.password, name, email, callback)
+      }
+    })
+  })
+}
+
+// returns a dictioary with the users information from the database
+function getUserByID(id, callback) {
+  getDB(db => {
+    let sql = 'select ID id, username, username, Password password, Name name, Email email from Users where ID = ?'
+    db.get(sql, [id], (err, row) => {
+      if (err || !row)
+        return callback(null);
+      return callback(row)
     })
   })
 }
@@ -480,7 +534,9 @@ module.exports = {
   addUser: addUser,
   removeUser: removeUser,
   getUserID: getUserID,
-  auth:auth,
+  auth: auth,
+  getUserByID:getUserByID,
+  changeUser:changeUser,
   addLock: addLock,
   removeLock: removeLock,
   addPerm: addPerm,
