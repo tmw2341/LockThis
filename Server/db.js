@@ -47,7 +47,8 @@ function addUser(name, email, username, pass, callback) { //Add user to database
   getDB(db => {
     // hash password
     bcrypt.hash(pass, 5, (err, hashed) => {
-      db.run(`INSERT INTO Users(Name, Email, Username, Password) VALUES(?, ?, ?, ?)`, [
+      let sql = 'INSERT INTO Users(Name, Email, Username, Password) VALUES(?, ?, ?, ?)'
+      db.run(sql, [
         name, email, username, hashed
       ], function(err) {
         if (err) {
@@ -62,19 +63,19 @@ function addUser(name, email, username, pass, callback) { //Add user to database
   })
 }
 
-function removeUser(ID, callback) { //remove users from the database
+function removeUser(id, callback) { //remove users from the database
   let sql = `DELETE FROM Users WHERE ID = ?`;
-  permissionsByUser(ID, permIds => {
+  permissionsByUser(id, permIds => {
     for (let i = 0; i < permIds.length; i++) {
       removePerm(permIds[i]);
     }
   });
-  getDB(db => db.run(sql, [ID], function(err) {
+  getDB(db => db.run(sql, [id], function(err) {
     if (err) {
       console.log(err.message);
       return callback(false);
     }
-    console.log(`User with ID ${ID} removed from database`);
+    console.log(`User with ID ${id} removed from database`);
     return callback(true);
   }));
 }
@@ -118,8 +119,10 @@ function auth(username, password, callback) {
 function _changeUser(id, username, password, name, email, callback) {
   getDB(db => {
     let sql = "UPDATE Users SET Username = ?, Password = ?, Name = ?, Email = ? WHERE ID = ?"
-    db.run(sql, [username, password, name, email, id], err => {
-      if(err) {
+    db.run(sql, [
+      username, password, name, email, id
+    ], err => {
+      if (err) {
         console.log(err)
         return callback(null)
       } else {
@@ -166,37 +169,42 @@ function getUserByID(id, callback) {
   })
 }
 
-function addLock(ID, callback) { //adds lock to database
-  getDB(db => db.run(`INSERT INTO Locks(ID) VALUES(?)`, [ID], function(err) {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    console.log(`A lock has been inserted with id ${ID}`);
-    return callback(true);
-  }));
+function addLock(id, description, callback) { //adds lock to database
+  getDB(db => {
+    let sql = 'INSERT INTO Locks(id, description) VALUES(?,?)'
+    db.run(sql, [
+      id, description
+    ], function(err) {
+      if (err) {
+        console.log(err.message);
+        return callback(null);
+      }
+      return callback(true);
+    })
+  })
 }
 
-function removeLock(ID, callback) { //removes lock from database
-  let sql = `DELETE FROM Locks
-               WHERE ID = ?`;
-  permissionsByLock(ID, permIds => {
-    console.log(permIds);
-    for (let i = 0; i < permIds.length; i++) {
-      removePerm(permIds[i]);
-    }
-  });
-  getDB(db => db.run(sql, [ID], function(err) {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    console.log(`Lock with ID ${ID} removed from database`);
-    return callback(true);
-  }));
+// removes locks and permissions from database
+function removeLock(id, callback) {
+  getDB(db => {
+    let lock_sql = 'DELETE FROM Locks WHERE ID = ?'
+    let perm_sql = 'DELETE FROM Permissions WHERE LockID = ?'
+    db.run(lock_sql, [id], err1 => {
+      if (!err1) {
+        db.run(perm_sql, [id], err2 => {
+          if (!err2)
+            return callback(true)
+          console.log(err2)
+        })
+      }
+      console.log(err1)
+      return callback(null)
+    })
+  })
 }
 
-function addPerm(user, lock, callback) { //adds permission to database
+//adds permission to database
+function addPerm(user, lock, callback) {
   getDB(db => db.run(`INSERT INTO Permissions(LockID, UserID) VALUES(?, ?)`, [
     lock, user
   ], function(err) {
@@ -209,15 +217,15 @@ function addPerm(user, lock, callback) { //adds permission to database
   }));
 }
 
-function removePerm(ID, callback) { //removes permission from database
-  let sql = `DELETE FROM Permissions
-               WHERE ID = ?`;
-  getDB(db => db.run(sql, [ID], function(err) {
+//removes permission from database
+function removePerm(id, callback) {
+  let sql = `DELETE FROM Permissions WHERE ID = ?`;
+  getDB(db => db.run(sql, [id], function(err) {
     if (err) {
       console.log(err.message);
       return callback(false);
     }
-    console.log(`Permission with ID ${ID} removed from database`);
+    console.log(`Permission with ID ${id} removed from database`);
     return callback(true);
   }));
 }
@@ -240,10 +248,10 @@ function getLockStatus(id, callback) {
                 FROM Locks
                 WHERE ID = ?`
   getDB(db => db.get(sql, [id], (err, row) => {
-    if(err) {
+    if (err) {
       console.log(err)
     } else {
-      if(row) {
+      if (row) {
         return callback(row.status);
       }
       console.log("no log with id", id)
@@ -253,8 +261,8 @@ function getLockStatus(id, callback) {
 }
 
 //changes the status of a given lock
-function changeLockStatus(ID, status, callback) {
-  let data = [status, ID];
+function changeLockStatus(id, status, callback) {
+  let data = [status, id];
   let sql = `UPDATE Locks
             SET Status = ?
             WHERE ID = ?`;
@@ -308,10 +316,9 @@ function returnAllUsers(callback) { //returns the ids of all users in an array
 }
 
 function returnAllLockStatus(callback) { //return the status of all locks in array indexed by lock ID
-  let allStatus = {};
+  let allStatus = {}
   let index = 0;
-  let sql = `SELECT DISTINCT ID id, Status status FROM Locks
-           ORDER BY ID`;
+  let sql = `SELECT DISTINCT ID id, Status status FROM Locks ORDER BY ID`;
   getDB(db => db.all(sql, [], (err, rows) => {
     if (err) {
       console.log(err.message);
@@ -325,24 +332,22 @@ function returnAllLockStatus(callback) { //return the status of all locks in arr
   }));
 }
 
-function getLockDesc(ID, callback) { //gets Lock Description
-  let sql = `SELECT Description desc
-                FROM Locks
-                WHERE ID = ?`
-  getDB(db => db.get(sql, [ID], (err, row) => {
+function getLockDesc(id, callback) { //gets Lock Description
+  let sql = `SELECT Description desc FROM Locks WHERE ID = ?`
+  getDB(db => db.get(sql, [id], (err, row) => {
     if (err) {
       console.log(err.message);
       return callback(false);
     }
     row
       ? console.log(row.desc)
-      : console.log(`No lock found with the id ${ID}`);
+      : console.log(`No lock found with the id ${id}`);
     return callback(true);
   }));
 }
 
-function setLockDesc(ID, desc, callback) {
-  let data = [desc, ID];
+function setLockDesc(id, desc, callback) {
+  let data = [desc, id];
   let sql = `UPDATE Locks
             SET Description = ?
             WHERE ID = ?`;
@@ -357,8 +362,7 @@ function setLockDesc(ID, desc, callback) {
 }
 
 function permissionsByLock(lockID, callback) { //gets all permissions associated with lock
-  let sql = `SELECT ID id from Permissions
-               Where LockID = ?`;
+  let sql = `SELECT ID id from Permissions Where LockID = ?`;
   let index = 0;
   let Perms = [];
   getDB(db => db.all(sql, [lockID], (err, rows) => {
@@ -376,8 +380,7 @@ function permissionsByLock(lockID, callback) { //gets all permissions associated
 }
 
 function permissionsByUser(userID, callback) { //gets all permissions associated with user
-  let sql = `SELECT ID id from Permissions
-               Where UserID = ?`;
+  let sql = `SELECT ID id from Permissions Where UserID = ?`;
   let index = 0;
   let Perms = [];
   getDB(db => db.all(sql, [userID], (err, rows) => {
@@ -402,8 +405,8 @@ module.exports = {
   removeUser: removeUser,
   getUserID: getUserID,
   auth: auth,
-  getUserByID:getUserByID,
-  changeUser:changeUser,
+  getUserByID: getUserByID,
+  changeUser: changeUser,
   addLock: addLock,
   removeLock: removeLock,
   addPerm: addPerm,

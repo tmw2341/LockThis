@@ -138,10 +138,10 @@ app.post('/user/modify', (req, res) => {
 app.post('/user/locks', (req, res) => {
   auth(req, res, id => {
     db.locksByUser(id, locks => {
-      if(!locks) {
-        res.status(200).json({success:false, error:'sever error'})
+      if (!locks) {
+        res.status(200).json({success: false, error: 'sever error'})
       } else {
-        res.status(200).json({success:true, locks})
+        res.status(200).json({success: true, locks})
       }
     })
   })
@@ -158,8 +158,11 @@ app.post('/user/locks', (req, res) => {
  */
 app.post('/lock/add', (req, res) => {
   auth(req, res, id => {
-    // TODO finish
-    res.status(200)
+    if(!(req.body.lock_id && req.body.description)) {
+      badRequest(res)
+    } else {
+      db.addLock
+    }
   })
 });
 
