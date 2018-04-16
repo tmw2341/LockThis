@@ -1,5 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
-db = openDBCon();
+let db = openDBCon();
 
 function openDBCon(callback) { // open database in memory
   let db = new sqlite3.Database('lockDB.db', (err) => {
@@ -433,4 +433,34 @@ function permissionsByUser(userID, callback) { //gets all permissions associated
     });
     return callback(Perms);
   }));
+}
+
+module.exports = {
+  initDB:initDB,
+  getDB:getDB,
+  closeDBCon:closeDBCon,
+  addUser:addUser,
+  removeUser:removeUser,
+  addLock:addLock,
+  removeLock:removeLock,
+  addPerm:addPerm,
+  removePerm:removePerm,
+  locksByUser:locksByUser,
+  getLockStatus:getLockStatus,
+  changeLockStatus:changeLockStatus,
+  getUserName:getUserName,
+  editUserName:editUserName,
+  getUserEmail:getUserEmail,
+  editUserEmail:editUserEmail,
+  getUserUsername:getUserUsername,
+  editUserUsername:editUserUsername,
+  getUserPassword:getUserPassword,
+  editUserPassword:editUserPassword,
+  returnAllLocks:returnAllLocks,
+  returnAllUsers:returnAllUsers,
+  returnAllLockStatus:returnAllLockStatus,
+  getLockDesc:getLockDesc,
+  setLockDesc:setLockDesc,
+  permissionsByLock:permissionsByLock,
+  permissionsByUser:permissionsByUser
 }
