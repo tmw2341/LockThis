@@ -1,3 +1,10 @@
+# USER DEFINED
+
+docs/
+.DS_Store
+
+# GENERATED TEMPLATES
+
 # Logs
 logs
 *.log
