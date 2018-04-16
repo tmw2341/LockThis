@@ -2,6 +2,7 @@
 
 docs/
 .DS_Store
+*.db
 
 # GENERATED TEMPLATES
 
