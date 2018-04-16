@@ -11,6 +11,23 @@ app.use((req, res, next) => {
   next();
 });
 
+function badRequest(res) {
+  res.status(200).json({success: false, error: 'bad request'})
+}
+
+function auth(req, res, callback) {
+  if (!(req.body.username && req.body.password)) {
+    badRequest(res)
+  } else {
+    db.auth(req.body.username, req.body.password, uid => {
+      if (!uid) {
+        res.status(200).json({success: false, error: 'unable to authenticate'})
+      } else
+        callback(uid)
+    })
+  }
+}
+
 /**
  * @apiDefine Default
  * @apiSuccess {boolean} success true
@@ -37,7 +54,6 @@ app.use((req, res, next) => {
  */
 app.post('/user/add', (req, res) => {
   if (req.body.name && req.body.email && req.body.username && req.body.password) {
-    // [\w.-]+@[\w.-]+.[\w.-]+
     if (!(/[\w.-]+@[\w.-]+.[\w.-]+/.test(req.body.email))) {
       res.status(200).json({success: false, error: "invalid email address"})
     } else {
@@ -56,7 +72,7 @@ app.post('/user/add', (req, res) => {
       })
     }
   } else {
-    res.status(200).json({success: false, error: "bad request"})
+    badRequest(res)
   }
 });
 
@@ -69,23 +85,15 @@ app.post('/user/add', (req, res) => {
  * @apiUse Default
  */
 app.post('/user/remove', (req, res) => {
-  if (!(req.body.username && req.body.password)) {
-    res.status(200).json({success: false, error: "invalid request"})
-  } else {
-    db.auth(req.body.username, req.body.password, uid => {
-      if (!uid) {
-        res.status(200).json({success: false, error: "unable to authenticate"})
+  auth(req, res, id => {
+    db.removeUser(uid, removed => {
+      if (!removed) {
+        res.status(200).json({success: false, error: "server unable to remove user"})
       } else {
-        db.removeUser(uid, removed => {
-          if (!removed) {
-            res.status(200).json({success: false, error: "server unable to remove user"})
-          } else {
-            res.status(200).json({success: true})
-          }
-        })
+        res.status(200).json({success: true})
       }
     })
-  }
+  })
 });
 
 /**
@@ -101,30 +109,22 @@ app.post('/user/remove', (req, res) => {
  * @apiUse Default
  */
 app.post('/user/modify', (req, res) => {
-  if(!(req.body.username && req.body.password)) {
-    res.status(200).json({success:false, error:'invalid request'})
-  } else {
-    db.auth(req.body.username, req.body.password, id => {
-      if(!id) {
-        res.status(200).json({success:false, error:'unable to authenticate'})
+  auth(req, res, id => {
+    let data = {
+      username: req.body.new_username,
+      password: req.body.new_password,
+      name: req.body.new_name,
+      email: req.body.new_email
+    }
+    db.changeUser(id, data, updated => {
+      if (updated) {
+        res.status(200).json({success: true})
       } else {
-        let data = {
-          username:req.body.new_username,
-          password:req.body.new_password,
-          name:req.body.new_name,
-          email:req.body.new_email
-        }
-        db.changeUser(id, data, updated => {
-          if(updated) {
-            res.status(200).json({success:true})
-          } else {
-            res.status(200).json({success:false, error:"server unable to modify user"})
-          }
-        })
+        res.status(200).json({success: false, error: "server unable to modify user"})
       }
     })
-  }
-});
+  })
+})
 
 /**
   * @api {get} /user/locks get locks
@@ -133,10 +133,19 @@ app.post('/user/modify', (req, res) => {
   * @apiDescription get all locks that a use has access to
   * @apiUse Login
   * @apiUse Default
+  * @apiSuccess {table} locks a table of lock ids
   */
 app.post('/user/locks', (req, res) => {
-  res.status(200).json({success: true})
-});
+  auth(req, res, id => {
+    db.locksByUser(id, locks => {
+      if(!locks) {
+        res.status(200).json({success:false, error:'sever error'})
+      } else {
+        res.status(200).json({success:true, locks})
+      }
+    })
+  })
+})
 
 /**
  * @api {post} /lock/add add lock
@@ -145,9 +154,13 @@ app.post('/user/locks', (req, res) => {
  * @apiParam (Required) {string} lock_id the id of the lock
  * @apiParam (Required) {string} description a short description of the lock
  * @apiUse Default
+ * @apiUse Login
  */
 app.post('/lock/add', (req, res) => {
-  res.status(200).json({success: true})
+  auth(req, res, id => {
+    // TODO finish
+    res.status(200)
+  })
 });
 
 /**

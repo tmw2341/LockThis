@@ -225,19 +225,19 @@ function removePerm(ID, callback) { //removes permission from database
 function locksByUser(userID, callback) { //gets all locks associated with user
   let sql = `SELECT LockID id FROM Permissions
                WHERE UserID = ?`;
-  let Locks = {};
+  let locks = {};
   let index = 0;
   getDB(db => db.all(sql, [userID], (err, rows) => {
     if (err) {
       console.log(err.message);
-      return callback(false);
+      return callback(null);
     }
     rows.forEach((row) => {
-      Locks[index] = row.id;
-      console.log(Locks[index]);
+      locks[index] = row.id;
+      console.log(locks[index]);
       index++;
     });
-    return callback(Locks);
+    return callback(locks);
   }));
 }
 
