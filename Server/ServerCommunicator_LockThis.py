@@ -2,6 +2,7 @@
 
 import socket
 import sys
+from DBConn import DataBase
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,9 +21,16 @@ while True:
     connection, client_address = sock.accept()
     try:
         print('connection from', client_address)
-        status = "1"
-        print("Sending " + status)
-        connection.sendall(status.encode())
+        lock_id = connection.recv(1024)
+        db = DataBase()
+        status = db.checkStatus(lock_id)
+        if status == None:
+            #ToDo send an error
+            print("Lock_Id not found: " + lock_id)
+        else:
+            print(status)
+            connection.sendall(str(status).encode())
+
     finally:
         # Clean up the connection
         connection.close()

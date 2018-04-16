@@ -9,15 +9,25 @@
 
   <br></br>
 
-  <button>Lock</button>
+  <button id="lockButton" onclick="locFunc()">Lock</button>
   <button>Unlock</button>
 
   <script>
-    $.get(URL, fillSelect);
 
-    fillSelect(data, status){
+  function locFunc(){
+    console.log("test");
+    $.post("http://lockthis.ece.iastate.edu:3000/user/locks",
+  {
+    username: "bobLock",
+    password: "Alexabob!"
+  },
+  function(data, status){
+    alert("Locked");
+  });
+  }
 
-    }
+
+
 
   </script>
 

@@ -1,10 +1,11 @@
-# USER DEFINED
+.DS_Store
 
 docs/
 .DS_Store
 *.db
 
 # GENERATED TEMPLATES
+>>>>>>> 33cc943f6c74252714e02e31d10a93876ffc5964
 
 # Logs
 logs
