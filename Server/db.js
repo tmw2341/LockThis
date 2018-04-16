@@ -222,174 +222,41 @@ function removePerm(ID, callback) { //removes permission from database
   }));
 }
 
-function locksByUser(userID, callback) { //gets all locks associated with user
-  let sql = `SELECT LockID id FROM Permissions
-               WHERE UserID = ?`;
-  let locks = {};
-  let index = 0;
+// returns a table of lock objects with keys id, description, and status for each lock
+function locksByUser(userID, callback) {
+  let sql = 'select LockID id, Description description, Status status from Permissions inner join Locks on Permissions.LockID = Locks.ID where UserID = ?';
   getDB(db => db.all(sql, [userID], (err, rows) => {
     if (err) {
       console.log(err.message);
       return callback(null);
     }
-    rows.forEach((row) => {
-      locks[index] = row.id;
-      console.log(locks[index]);
-      index++;
-    });
-    return callback(locks);
+    return callback(rows);
   }));
 }
 
-function getLockStatus(ID, callback) { //gets the status of a lock
+// return a locks status
+function getLockStatus(id, callback) {
   let sql = `SELECT Status status
                 FROM Locks
                 WHERE ID = ?`
-  getDB(db => db.get(sql, [ID], (err, row) => {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
+  getDB(db => db.get(sql, [id], (err, row) => {
+    if(err) {
+      console.log(err)
+    } else {
+      if(row) {
+        return callback(row.status);
+      }
+      console.log("no log with id", id)
     }
-    row
-      ? console.log(row.status)
-      : console.log(`No lock found with the id ${ID}`);
-    return callback(true);
-
+    return callback(null)
   }));
 }
 
-function changeLockStatus(ID, status, callback) { //changes the status of a  given lock
+//changes the status of a given lock
+function changeLockStatus(ID, status, callback) {
   let data = [status, ID];
   let sql = `UPDATE Locks
             SET Status = ?
-            WHERE ID = ?`;
-
-  getDB(db => db.run(sql, data, function(err) {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    console.log(`Row(s) updated: ${this.changes}`);
-    return callback(true);
-  }));
-}
-
-function getUserName(ID, callback) { //gets User Name
-  let sql = `SELECT Name name
-                FROM Users
-                WHERE ID = ?`
-  getDB(db => db.get(sql, [ID], (err, row) => {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    row
-      ? console.log(row.name)
-      : console.log(`No user found with the id ${ID}`);
-    return callback(true);
-  }));
-}
-
-function editUserName(ID, name, callback) { //changes name of given user
-  let data = [name, ID];
-  let sql = `UPDATE Users
-            SET Name = ?
-            WHERE ID = ?`;
-
-  getDB(db => db.run(sql, data, function(err) {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    console.log(`Row(s) updated: ${this.changes}`);
-    return callback(true);
-  }));
-}
-
-function getUserEmail(ID, callback) { //gets User Email
-  let sql = `SELECT Email email
-                FROM Users
-                WHERE ID = ?`
-  getDB(db => db.get(sql, [ID], (err, row) => {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    row
-      ? console.log(row.email)
-      : console.log(`No user found with the id ${ID}`);
-    return callback(true);
-  }));
-}
-
-function editUserEmail(ID, email, callback) { //changes email of given user
-  let data = [email, ID];
-  let sql = `UPDATE Users
-            SET Email = ?
-            WHERE ID = ?`;
-
-  getDB(db => db.run(sql, data, function(err) {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    console.log(`Row(s) updated: ${this.changes}`);
-    return callback(true);
-  }));
-}
-
-function getUserUsername(ID, username, callback) { //gets User username
-  let sql = `SELECT Username username
-                FROM Users
-                WHERE ID = ?`
-  getDB(db => db.get(sql, [ID], (err, row) => {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    row
-      ? console.log(row.username)
-      : console.log(`No user found with the id ${ID}`);
-    return callback(true);
-  }));
-}
-
-function editUserUsername(ID, username, callback) { //changes username of given user
-  let data = [username, ID];
-  let sql = `UPDATE Users
-            SET Username = ?
-            WHERE ID = ?`;
-
-  getDB(db => db.run(sql, data, function(err) {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    console.log(`Row(s) updated: ${this.changes}`);
-    return callback(true);
-  }));
-}
-
-function getUserPassword(ID, password, callback) { // gets user password
-  let sql = `SELECT Password password
-                FROM Users
-                WHERE ID = ?`
-  getDB(db => db.get(sql, [ID], (err, row) => {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    row
-      ? console.log(row.password)
-      : console.log(`No user found with the id ${ID}`);
-    return callback(true);
-  }));
-}
-
-function editUserPassword(ID, password, callback) { //changes password of given user
-  let data = [password, ID];
-  let sql = `UPDATE Users
-            SET Password = ?
             WHERE ID = ?`;
 
   getDB(db => db.run(sql, data, function(err) {
@@ -544,14 +411,6 @@ module.exports = {
   locksByUser: locksByUser,
   getLockStatus: getLockStatus,
   changeLockStatus: changeLockStatus,
-  getUserName: getUserName,
-  editUserName: editUserName,
-  getUserEmail: getUserEmail,
-  editUserEmail: editUserEmail,
-  getUserUsername: getUserUsername,
-  editUserUsername: editUserUsername,
-  getUserPassword: getUserPassword,
-  editUserPassword: editUserPassword,
   returnAllLocks: returnAllLocks,
   returnAllUsers: returnAllUsers,
   returnAllLockStatus: returnAllLockStatus,
