@@ -169,17 +169,17 @@ function getUserByID(id, callback) {
   })
 }
 
-function addLock(id, description, callback) { //adds lock to database
+// add a lock and a permission for that user
+function addLock(uid, id, description, callback) {
   getDB(db => {
-    let sql = 'INSERT INTO Locks(id, description) VALUES(?,?)'
-    db.run(sql, [
-      id, description
-    ], function(err) {
-      if (err) {
-        console.log(err.message);
-        return callback(null);
+    let sql1 = 'INSERT INTO Locks(id, description) VALUES(?,?)'
+    let sql2 = 'INSERT INTO Permissions(LockID, UserID) VALUES(?, ?)'
+    let data1 = [id, description]
+    let data2 = [id, uid]
+    db.run(sql, data, err => {
+      if (!err) {
+        db.run
       }
-      return callback(true);
     })
   })
 }
@@ -232,7 +232,7 @@ function removePerm(id, callback) {
 
 // returns a table of lock objects with keys id, description, and status for each lock
 function locksByUser(userID, callback) {
-  let sql = 'select LockID id, Description description, Status status from Permissions inner join Locks on Permissions.LockID = Locks.ID where UserID = ?';
+  let sql = 'SELECT LockID id, Description description, Status status FROM Permissions INNER JOIN Locks ON Permissions.LockID = Locks.ID WHERE UserID = ?';
   getDB(db => db.all(sql, [userID], (err, rows) => {
     if (err) {
       console.log(err.message);
@@ -242,42 +242,85 @@ function locksByUser(userID, callback) {
   }));
 }
 
+function userHasPermissions(uid, lock_id, callback) {
+  getDB(db => {
+    let sql = 'SELECT * FROM Permissions WHERE UserID = ? AND LockID = ?'
+    db.get(sql, [
+      uid, lock_id
+    ], (err, row) => {
+      if (err) {
+        console.log(err);
+        return callback(null);
+      } else {
+        if (row) {
+          return callback(true);
+        } else {
+          return callback(null);
+        }
+      }
+    })
+  })
+}
+
 // return a locks status
 function getLockStatus(id, callback) {
-  let sql = `SELECT Status status
-                FROM Locks
-                WHERE ID = ?`
-  getDB(db => db.get(sql, [id], (err, row) => {
-    if (err) {
-      console.log(err)
-    } else {
-      if (row) {
-        return callback(row.status);
+  getDB(db => {
+    let sql = 'SELECT Status status FROM Locks WHERE ID = ?'
+    db.get(sql, id, (err, row) => {
+      if (err) {
+        console.log(err)
+      } else {
+        if (row) {
+          return callback(row.status)
+        }
+        return callback(null)
       }
-      console.log("no log with id", id)
-    }
-    return callback(null)
-  }));
+    })
+  })
 }
 
 //changes the status of a given lock
 function changeLockStatus(id, status, callback) {
-  let data = [status, id];
-  let sql = `UPDATE Locks
-            SET Status = ?
-            WHERE ID = ?`;
-
-  getDB(db => db.run(sql, data, function(err) {
-    if (err) {
-      console.log(err.message);
-      return callback(false);
-    }
-    console.log(`Row(s) updated: ${this.changes}`);
-    return callback(true);
-  }));
+  getDB(db => {
+    let data = [status, id]
+    let sql = 'UPDATE Locks SET Status = ? WHERE ID = ?'
+    db.run(sql, data, err => {
+      if (err) {
+        console.log(err)
+        return callback(null)
+      } else {
+        return callback(true)
+      }
+    })
+  })
 }
 
-function returnAllLocks(callback) { //returns an array  of all locks
+// toggles the locks status
+function toggleLock(lock_id, callback) {
+  getDB(db => {
+    getLockStatus(lock_id, status => {
+      if (status === 1) {
+        changeLockStatus(lock_id, 0, changed => {
+          if (changed)
+            return callback(0)
+          return callback(null)
+        })
+      } else if (status === 0) {
+        changeLockStatus(lock_id, 1, changed => {
+          if (changed)
+            return callback(0)
+          return callback(null)
+        })
+      } else {
+        console.log('error toggling lock status')
+        return callback(null)
+      }
+    })
+  })
+}
+
+//returns an array  of all locks
+function returnAllLocks(callback) {
   let allLocks = {};
   let index = 0;
   let sql = `SELECT DISTINCT ID id FROM Locks
@@ -412,6 +455,7 @@ module.exports = {
   addPerm: addPerm,
   removePerm: removePerm,
   locksByUser: locksByUser,
+  userHasPermissions: userHasPermissions,
   getLockStatus: getLockStatus,
   changeLockStatus: changeLockStatus,
   returnAllLocks: returnAllLocks,

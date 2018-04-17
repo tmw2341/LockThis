@@ -158,10 +158,16 @@ app.post('/user/locks', (req, res) => {
  */
 app.post('/lock/add', (req, res) => {
   auth(req, res, id => {
-    if(!(req.body.lock_id && req.body.description)) {
+    if (!(req.body.lock_id && req.body.description)) {
       badRequest(res)
     } else {
-      db.addLock
+      db.addLock(id, req.body.lock_id, req.body.description, added => {
+        if (!added) {
+          res.send(200).json({success: false, error: 'unable to add lock'})
+        } else {
+          res.send(200).json({success: true})
+        }
+      })
     }
   })
 });
@@ -171,15 +177,32 @@ app.post('/lock/add', (req, res) => {
  * @apiName RemoveLock
  * @apiGroup locks
  * @apiParam (Required) {string} lock_id the id of the lock
- * @apiParam (Required) {string} description a short description of the lock
  * @apiUse Default
  */
 app.post('/lock/remove', (req, res) => {
-  res.status(200).json({success: true})
-});
+  auth(req, res, id => {
+    if (!req.body.lock_id) {
+      badRequest(res)
+    } else {
+      db.userHasPermissions(id, req.body.lock_id, allowed => {
+        if (!allowed) {
+          res.status(200).json({success: false, error: 'user does not have permissions for lock'})
+        } else {
+          db.removeLock(req.body.lock_id, removed => {
+            if (!removed) {
+              res.status(200).json({success: false, error: 'server error'})
+            } else {
+              res.status(200).json({success: true})
+            }
+          })
+        }
+      })
+    }
+  })
+})
 
 /**
- * @api {post} /lock/modify modify lock
+ * @api {post} /lock/modify modify lock description
  * @apiName ModifyLock
  * @apiGroup locks
  * @apiParam (Required) {string} lock_id the id of the lock
@@ -219,16 +242,64 @@ app.post('/lock/permissions/remove', (req, res) => {
 });
 
 /**
- * @api {post} /lock/status get status
- * @apiName GetLockStatus
+ * @api {post} /lock/state get lock state
+ * @apiName GetLockState
  * @apiGroup locks
- * @apiDescription get the status of a lock
+ * @apiDescription get the status of a lock. The user must have permissions for the lock.
  * @apiParam (Required) {string} lock_id the lock id
  * @apiUse Default
+ * @apiUse Login
+ * @apiSuccess {int} state the state of the lock
  */
-app.post('/lock/status', (req, res) => {
-  res.status(200).json({success: true})
+app.post('/lock/state', (req, res) => {
+  auth(req, res, id => {
+    if (!req.body.lock_id) {
+      badRequest(res);
+    } else {
+      db.userHasPermissions(id, req.body.lock_id, allowed => {
+        if (!allowed) {
+          res.status(200).json({success: false, error: 'user does not have permissions for lock'})
+        } else {
+          db.getLockStatus(req.body.lock_id, state => {
+            if (!status) {
+              res.status(200).json({success: false, error: 'server error'})
+            } else {
+              res.status(200).json({success: true, state})
+            }
+          })
+        }
+      })
+    }
+  })
 });
+
+/**
+ * @api {post} /lock/toggle toggle a locks state
+ * @apiName ChangeLockStatus
+ * @apiGroup locks
+ * @apiDescription Toggles a lock's state. The username specified must have permissions for the lock.
+ * @apiUse Login
+ * @apiParam (Required) {string} lock_id the id for the lock
+ * @apiUse Default
+ * @apiSuccess {int} state the state of the lock after toggling
+ */
+app.post('/lock/toggle', (req, res) => {
+  auth(req, res, id => {
+    db.userHasPermissions(id, req.body.lock_id, allowed => {
+      if(!allowed) {
+        res.status(200).json({success: false, error: 'user does not have permissions for lock'})
+      } else {
+        db.toggleLock(req.body.lock_id, state => {
+          if(!state) {
+            res.status(200).json({success: false, error: 'server error'})
+          } else {
+            res.status(200).json({success: true, state})
+          }
+        })
+      }
+    })
+  })
+})
 
 app.use('/api', express.static(__dirname + '/docs'));
 
