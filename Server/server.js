@@ -2,7 +2,7 @@ const express = require('express');
 var app = express();
 let db = require('./db')
 
-// add json body parser
+// json body parser
 app.use(express.json());
 
 // logger middle ware
@@ -55,10 +55,9 @@ function lockPerm(req, res, id, callback) {
  * @apiName AddUser
  * @apiGroup users
  * @apiDescription creates a new user account
- * @apiParam {string} name the name used for creating personalized messages
- * @apiParam {string} email the users email must be something@something.something
- * @apiParam {string} username username of the user
- * @apiParam {string} password the password for the user
+ * @apiUse Login
+ * @apiParam (Required) {string} name the name used for creating personalized messages
+ * @apiParam (Required) {string} email the users email must be something@something.something
  * @apiUse Default
  * @apiSuccess {string} id the users id
  */
@@ -90,7 +89,7 @@ app.post('/user/add', (req, res) => {
  * @api {post} /user/remove remove user
  * @apiName RemoveUser
  * @apiGroup users
- * @apiDescription remove
+ * @apiDescription remove a users account. must be called by the user
  * @apiUse Login
  * @apiUse Default
  */
@@ -143,7 +142,7 @@ app.post('/user/modify', (req, res) => {
   * @apiDescription get all locks that a use has access to
   * @apiUse Login
   * @apiUse Default
-  * @apiSuccess {table} locks a table of lock ids
+  * @apiSuccess {table} locks a table of objects with keys id, status, and description
   */
 app.post('/user/locks', (req, res) => {
   auth(req, res, id => {
@@ -186,6 +185,7 @@ app.post('/lock/add', (req, res) => {
  * @api {post} /lock/remove remove lock
  * @apiName RemoveLock
  * @apiGroup locks
+ * @apiUse Login
  * @apiParam (Required) {string} lock_id the id of the lock
  * @apiUse Default
  */
@@ -211,6 +211,7 @@ app.post('/lock/remove', (req, res) => {
  * @api {post} /lock/modify modify lock description
  * @apiName ModifyLock
  * @apiGroup locks
+ * @apiUse Login
  * @apiParam (Required) {string} lock_id the id of the lock
  * @apiParam (Required) {string} description a short description of the lock
  * @apiUse Default
