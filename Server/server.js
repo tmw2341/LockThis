@@ -9,7 +9,7 @@ app.use(express.json());
 app.use((req, res, next) => {
   console.log(req.path, req.body);
   next();
-});
+})
 
 function badRequest(res) {
   res.status(200).json({success: false, error: 'bad request'})
@@ -21,11 +21,21 @@ function auth(req, res, callback) {
   } else {
     db.auth(req.body.username, req.body.password, uid => {
       if (!uid) {
-        res.status(200).json({success: false, error: 'unable to authenticate'})
+        return res.status(200).json({success: false, error: 'unable to authenticate'})
       } else
-        callback(uid)
+        return callback(uid)
     })
   }
+}
+
+function lockPerm(req, res, id, callback) {
+  db.userHasPermissions(id, req.body.lock_id, allowed => {
+    if (!allowed) {
+      return res.status(200).json({success: false, error: 'user does not have permissions for lock'})
+    } else {
+      return callback()
+    }
+  })
 }
 
 /**
@@ -74,7 +84,7 @@ app.post('/user/add', (req, res) => {
   } else {
     badRequest(res)
   }
-});
+})
 
 /**
  * @api {post} /user/remove remove user
@@ -86,7 +96,7 @@ app.post('/user/add', (req, res) => {
  */
 app.post('/user/remove', (req, res) => {
   auth(req, res, id => {
-    db.removeUser(uid, removed => {
+    db.removeUser(id, removed => {
       if (!removed) {
         res.status(200).json({success: false, error: "server unable to remove user"})
       } else {
@@ -94,7 +104,7 @@ app.post('/user/remove', (req, res) => {
       }
     })
   })
-});
+})
 
 /**
  * @api {post} /user/modify modify user
@@ -163,14 +173,14 @@ app.post('/lock/add', (req, res) => {
     } else {
       db.addLock(id, req.body.lock_id, req.body.description, added => {
         if (!added) {
-          res.send(200).json({success: false, error: 'unable to add lock'})
+          res.status(200).json({success: false, error: 'unable to add lock'})
         } else {
-          res.send(200).json({success: true})
+          res.status(200).json({success: true})
         }
       })
     }
   })
-});
+})
 
 /**
  * @api {post} /lock/remove remove lock
@@ -184,18 +194,14 @@ app.post('/lock/remove', (req, res) => {
     if (!req.body.lock_id) {
       badRequest(res)
     } else {
-      db.userHasPermissions(id, req.body.lock_id, allowed => {
-        if (!allowed) {
-          res.status(200).json({success: false, error: 'user does not have permissions for lock'})
-        } else {
-          db.removeLock(req.body.lock_id, removed => {
-            if (!removed) {
-              res.status(200).json({success: false, error: 'server error'})
-            } else {
-              res.status(200).json({success: true})
-            }
-          })
-        }
+      lockPerm(req, res, id, () => {
+        db.removeLock(req.body.lock_id, removed => {
+          if (!removed) {
+            res.status(200).json({success: false, error: 'server error'})
+          } else {
+            res.status(200).json({success: true})
+          }
+        })
       })
     }
   })
@@ -210,8 +216,22 @@ app.post('/lock/remove', (req, res) => {
  * @apiUse Default
  */
 app.post('/lock/modify', (req, res) => {
-  res.status(200).json({success: true})
-});
+  auth(req, res, id => {
+    if (!req.body.lock_id || !req.body.description) {
+      badRequest(res)
+    } else {
+      lockPerm(req, res, id, () => {
+        db.setLockDesc(req.body.lock_id, req.body.description, updated => {
+          if (!updated) {
+            res.status(200).json({success: false, error: 'server error'})
+          } else {
+            res.status(200).json({success: true})
+          }
+        })
+      })
+    }
+  })
+})
 
 /**
  * @api {post} /lock/permissions/add add permissions
@@ -224,8 +244,28 @@ app.post('/lock/modify', (req, res) => {
  * @apiUse Default
  */
 app.post('/lock/permissions/add', (req, res) => {
-  res.status(200).json({success: true})
-});
+  auth(req, res, id => {
+    lockPerm(req, res, id, () => {
+      if (!req.body.new_username || !req.body.lock_id) {
+        badRequest()
+      } else {
+        db.getUserID(req.body.new_username, new_id => {
+          if (!new_id) {
+            return res.status(200).json({success: false, error: 'user not found'})
+          } else {
+            db.addPerm(new_id, req.body.lock_id, added => {
+              if (!added) {
+                return res.status(200).json({success: false, error: 'server error'})
+              } else {
+                return res.status(200).json({success: true})
+              }
+            })
+          }
+        })
+      }
+    })
+  })
+})
 
 /**
  * @api {post} /lock/permissions/remove remove permissions
@@ -234,12 +274,32 @@ app.post('/lock/permissions/add', (req, res) => {
  * @apiDescription removes a lock permission
  * @apiUse Login
  * @apiParam (Required) {string} lock_id the lock id
- * @apiParam (Required) {string} new_username the username to remove
+ * @apiParam (Required) {string} r_username the username to remove
  * @apiUse Default
  */
 app.post('/lock/permissions/remove', (req, res) => {
-  res.status(200).json({success: true})
-});
+  auth(req, res, id => {
+    lockPerm(req, res, id, () => {
+      if (!req.body.r_username || !req.body.lock_id) {
+        return badRequest()
+      } else {
+        db.getUserID(req.body.r_username, new_id => {
+          if (!new_id) {
+            return res.status(200).json({success: false, error: 'user not found'})
+          } else {
+            db.removePerm(new_id, req.body.lock_id, removed => {
+              if (!removed) {
+                res.status(200).json({success: false, error: 'server error'})
+              } else {
+                res.status(200).json({success: true})
+              }
+            })
+          }
+        })
+      }
+    })
+  })
+})
 
 /**
  * @api {post} /lock/state get lock state
@@ -261,7 +321,7 @@ app.post('/lock/state', (req, res) => {
           res.status(200).json({success: false, error: 'user does not have permissions for lock'})
         } else {
           db.getLockStatus(req.body.lock_id, state => {
-            if (!status) {
+            if (state === undefined) {
               res.status(200).json({success: false, error: 'server error'})
             } else {
               res.status(200).json({success: true, state})
@@ -271,7 +331,7 @@ app.post('/lock/state', (req, res) => {
       })
     }
   })
-});
+})
 
 /**
  * @api {post} /lock/toggle toggle a locks state
@@ -286,11 +346,11 @@ app.post('/lock/state', (req, res) => {
 app.post('/lock/toggle', (req, res) => {
   auth(req, res, id => {
     db.userHasPermissions(id, req.body.lock_id, allowed => {
-      if(!allowed) {
+      if (!allowed) {
         res.status(200).json({success: false, error: 'user does not have permissions for lock'})
       } else {
         db.toggleLock(req.body.lock_id, state => {
-          if(!state) {
+          if (state === undefined) {
             res.status(200).json({success: false, error: 'server error'})
           } else {
             res.status(200).json({success: true, state})
@@ -301,11 +361,11 @@ app.post('/lock/toggle', (req, res) => {
   })
 })
 
-app.use('/api', express.static(__dirname + '/docs'));
+app.use('/api', express.static(__dirname + '/docs'))
 
 // default return 404 not found error
 app.use(function(req, res) {
-  res.send(404);
-});
+  res.status(404)
+})
 
-app.listen(3000);
+app.listen(3000)
