@@ -42,6 +42,7 @@ function lockPerm(req, res, id, callback) {
  * @apiDefine Default
  * @apiSuccess {boolean} success true
  * @apiError {boolean} success false
+ * @apiError {string} error the error message
  */
 
 /**
