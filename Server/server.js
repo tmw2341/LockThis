@@ -365,9 +365,11 @@ app.post('/lock/toggle', (req, res) => {
 
 app.use('/api', express.static(__dirname + '/docs'))
 
+app.use('/', express.static(__dirname + '/public/'))
+
 // default return 404 not found error
-app.use(function(req, res) {
-  res.status(404)
+app.use('/', (req, res) => {
+  res.status(404).send('404 Not Found')
 })
 
 app.listen(3000)
