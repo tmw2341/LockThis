@@ -20,5 +20,13 @@
   },
   "devDependencies": {
     "nodemon": "^1.17.3"
+  },
+  "apidoc": {
+    "name": "Lock This",
+    "version": "0.1.0",
+    "description": "Application Programing Interface (API) for the Lock This project.",
+    "apidoc": {
+      "title": "LockThis API"
+    }
   }
 }

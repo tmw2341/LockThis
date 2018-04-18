@@ -39,16 +39,24 @@ function lockPerm(req, res, id, callback) {
 }
 
 /**
- * @apiDefine Default
- * @apiSuccess {boolean} success true
- * @apiError {boolean} success false
- * @apiError {string} error the error message
+ * @apiDefine body JSON Body
  */
 
 /**
- * @apiDefine Login
- * @apiParam (Required) {string} username the users username
- * @apiParam (Required) {string} password the users password
+ * @apiDefine err Error
+ */
+
+/**
+ * @apiDefine default
+ * @apiSuccess {boolean} success true
+ * @apiError (err) {boolean} success false
+ * @apiError (err) {string} error the error message
+ */
+
+/**
+ * @apiDefine login
+ * @apiParam (body) {string} username the users username
+ * @apiParam (body) {string} password the users password
  */
 
 /**
@@ -56,11 +64,10 @@ function lockPerm(req, res, id, callback) {
  * @apiName AddUser
  * @apiGroup users
  * @apiDescription creates a new user account
- * @apiUse Login
- * @apiParam (Required) {string} name the name used for creating personalized messages
- * @apiParam (Required) {string} email the users email must be something@something.something
- * @apiUse Default
- * @apiSuccess {string} id the users id
+ * @apiUse login
+ * @apiParam (body) {string} name the name used for creating personalized messages
+ * @apiParam (body) {string} email the users email must be something@something.something
+ * @apiUse default
  */
 app.post('/user/add', (req, res) => {
   if (req.body.name && req.body.email && req.body.username && req.body.password) {
@@ -91,8 +98,8 @@ app.post('/user/add', (req, res) => {
  * @apiName RemoveUser
  * @apiGroup users
  * @apiDescription remove a users account. must be called by the user
- * @apiUse Login
- * @apiUse Default
+ * @apiUse login
+ * @apiUse default
  */
 app.post('/user/remove', (req, res) => {
   auth(req, res, id => {
@@ -110,13 +117,13 @@ app.post('/user/remove', (req, res) => {
  * @api {post} /user/modify modify user
  * @apiName ModifyUser
  * @apiGroup users
- * @apiDescription
- * @apiUse Login
- * @apiParam (Optional) {string} new_username
- * @apiParam (Optional) {string} new_name
- * @apiParam (Optional) {string} new_email
- * @apiParam (Optional) {string} new_password
- * @apiUse Default
+ * @apiDescription modify a users account details
+ * @apiUse login
+ * @apiParam (body) {string} [new_username] new username
+ * @apiParam (body) {string} [new_name] new name
+ * @apiParam (body) {string} [new_email] new email
+ * @apiParam (body) {string} [new_password] new password
+ * @apiUse default
  */
 app.post('/user/modify', (req, res) => {
   auth(req, res, id => {
@@ -137,12 +144,12 @@ app.post('/user/modify', (req, res) => {
 })
 
 /**
-  * @api {get} /user/locks get locks
+  * @api {post} /user/locks get locks
   * @apiName GetUserLocks
   * @apiGroup users
   * @apiDescription get all locks that a use has access to
-  * @apiUse Login
-  * @apiUse Default
+  * @apiUse login
+  * @apiUse default
   * @apiSuccess {table} locks a table of objects with keys id, status, and description
   */
 app.post('/user/locks', (req, res) => {
@@ -161,10 +168,11 @@ app.post('/user/locks', (req, res) => {
  * @api {post} /lock/add add lock
  * @apiName AddLock
  * @apiGroup locks
- * @apiParam (Required) {string} lock_id the id of the lock
- * @apiParam (Required) {string} description a short description of the lock
- * @apiUse Default
- * @apiUse Login
+ * @apiDescription add a lock the user will automatically have permissions added for the lock
+ * @apiParam (body) {string} lock_id the id of the lock
+ * @apiParam (body) {string} description a short description of the lock
+ * @apiUse default
+ * @apiUse login
  */
 app.post('/lock/add', (req, res) => {
   auth(req, res, id => {
@@ -186,9 +194,9 @@ app.post('/lock/add', (req, res) => {
  * @api {post} /lock/remove remove lock
  * @apiName RemoveLock
  * @apiGroup locks
- * @apiUse Login
- * @apiParam (Required) {string} lock_id the id of the lock
- * @apiUse Default
+ * @apiUse login
+ * @apiParam (body) {string} lock_id the id of the lock
+ * @apiUse default
  */
 app.post('/lock/remove', (req, res) => {
   auth(req, res, id => {
@@ -212,10 +220,10 @@ app.post('/lock/remove', (req, res) => {
  * @api {post} /lock/modify modify lock description
  * @apiName ModifyLock
  * @apiGroup locks
- * @apiUse Login
- * @apiParam (Required) {string} lock_id the id of the lock
- * @apiParam (Required) {string} description a short description of the lock
- * @apiUse Default
+ * @apiUse login
+ * @apiParam (body) {string} lock_id the id of the lock
+ * @apiParam (body) {string} description a short description of the lock
+ * @apiUse default
  */
 app.post('/lock/modify', (req, res) => {
   auth(req, res, id => {
@@ -240,10 +248,10 @@ app.post('/lock/modify', (req, res) => {
  * @apiName AddPermission
  * @apiGroup locks
  * @apiDescription add a new permission to the lock
- * @apiUse Login
- * @apiParam (Required) {string} lock_id the lock id
- * @apiParam (Required) {string} new_username the username to add
- * @apiUse Default
+ * @apiUse login
+ * @apiParam (body) {string} lock_id the lock id
+ * @apiParam (body) {string} new_username the username to add
+ * @apiUse default
  */
 app.post('/lock/permissions/add', (req, res) => {
   auth(req, res, id => {
@@ -274,10 +282,10 @@ app.post('/lock/permissions/add', (req, res) => {
  * @apiName RemovePermission
  * @apiGroup locks
  * @apiDescription removes a lock permission
- * @apiUse Login
- * @apiParam (Required) {string} lock_id the lock id
- * @apiParam (Required) {string} r_username the username to remove
- * @apiUse Default
+ * @apiUse login
+ * @apiParam (body) {string} lock_id the lock id
+ * @apiParam (body) {string} r_username the username to remove
+ * @apiUse default
  */
 app.post('/lock/permissions/remove', (req, res) => {
   auth(req, res, id => {
@@ -308,9 +316,9 @@ app.post('/lock/permissions/remove', (req, res) => {
  * @apiName GetLockState
  * @apiGroup locks
  * @apiDescription get the status of a lock. The user must have permissions for the lock.
- * @apiParam (Required) {string} lock_id the lock id
- * @apiUse Default
- * @apiUse Login
+ * @apiParam (body) {string} lock_id the lock id
+ * @apiUse default
+ * @apiUse login
  * @apiSuccess {int} state the state of the lock
  */
 app.post('/lock/state', (req, res) => {
@@ -340,9 +348,9 @@ app.post('/lock/state', (req, res) => {
  * @apiName ChangeLockStatus
  * @apiGroup locks
  * @apiDescription Toggles a lock's state. The username specified must have permissions for the lock.
- * @apiUse Login
- * @apiParam (Required) {string} lock_id the id for the lock
- * @apiUse Default
+ * @apiUse login
+ * @apiParam (body) {string} lock_id the id for the lock
+ * @apiUse default
  * @apiSuccess {int} state the state of the lock after toggling
  */
 app.post('/lock/toggle', (req, res) => {
