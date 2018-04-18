@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title>View Locks</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+
+<body>
+  <h1>View Locks</h1>
+  <div id="login">
+    <input type="text" id="uname" />
+    <input type="text" id="passwd" />
+    <button onclick="getLocks()">Get Locks</button>
+  </div>
+  <p id="screen"></p>
+  <script>
+    function getLocks() {
+
+      let celement = (tag, text) => {
+        let element = document.createElement(tag)
+        element.innerHTML = text
+        return element
+      }
+
+      console.log("running")
+      $.ajax({
+        url: 'http://lockthis.ece.iastate.edu:3000/user/locks',
+        dataType: 'json',
+        type: 'post',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          "username": $('#uname').val(),
+          "password": $('#passwd').val()
+        }),
+        processData: false,
+        success: function(data, textStatus, jQxhr) {
+          console.log(data)
+          $('#login').hide()
+          let screen = $('#screen')
+          let table = document.createElement("table")
+          let header = document.createElement("tr")
+          header.appendChild(celement("th", "LOCK ID"))
+          header.appendChild(celement("th", "DESCRIPTION"))
+          header.appendChild(celement("th", "STATUS"))
+          table.appendChild(header)
+          data.locks.forEach((lock) => {
+            let row = document.createElement("tr")
+            let id = document.createElement("td")
+            let descp = document.createElement("td")
+            let status = document.createElement("td")
+            id.innerHTML = lock.id
+            descp.innerHTML = lock.description
+            status.innerHTML = lock.status
+            row.appendChild(id)
+            row.appendChild(descp)
+            row.appendChild(status)
+            table.appendChild(row)
+          })
+          screen.append(table)
+        },
+        error: function(jqXhr, textStatus, errorThrown) {
+          console.log(errorThrown);
+        }
+      })
+    }
+  </script>
+</body>
+
+</html>
