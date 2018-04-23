@@ -1,0 +1,95 @@
+<!DOCTYPE html> 
+<head> 
+	<title> Login </title>
+	<link href="SIGN_IN.CSS" rel="stylesheet">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+	<!-- jQuery library -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	<script> 
+		function functionNext(){ 
+			location.href = "sign_in.html"; 
+		}
+
+		function authenticate(){ 
+			var username = document.getElementById("Username").value;
+			var password = document.getElementById("Password").value;
+			sessionStorage.setItem("Username", username);
+			sessionStorage.setItem("Password",password) ;
+			location.href="lock.hmtl"; 
+		}
+
+	</script>
+
+	<script>
+		// Get the modal
+		var modal = document.getElementById('id01');
+
+		// When the user clicks anywhere outside of the modal, close it
+		window.onclick = function(event) {
+			if (event.target == modal) {
+				modal.style.display = "none";
+			}
+		}
+	</script>
+</head>
+<body>
+	<div class="wrapper">
+		<form class="form-signin" method="POST" >       
+			<h2 class="form-signin-heading">Please login</h2>
+			<label for="Username" > Username: 
+				<input type="text" class="form-control" name="username" placeholder="Email Address" required="" autofocus="" id="Username" />
+			</label>
+			<br>
+			<label for="Password">Password :
+				<input type="password" class="form-control" name="password" placeholder="Password" required="" id="Password"/> 
+			</label> 
+			<br>
+			<br>  
+			<div class="button" >   
+				<button class="btn btn-lg btn-primary btn-block" type="submit" onclick="authenticate()">Login</button> 
+			</div>  
+			<br>
+			<div> 
+				<button class="btn btn-lg btn-primary btn-block" onclick="document.getElementById('id01').style.display='block'" style="width:auto;">Create an account</button>
+			</div>
+		</form>
+	</div>
+
+	<!-- Trial  -->
+
+	<div id="id01" class="modal">
+		<span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
+		<form class="modal-content" action="http://lockthis.ece.iastate.edu/user/add" method="POST">
+			<div class="container">
+				<h1>Smart Lock- Registration</h1>
+				<p>Create an Account</p>
+				<hr>
+
+				
+				<label for="Name"><b>Name</b></label>
+				<input type="text" placeholder="Enter Name" name="name" required>
+
+				<label for="email"><b>Email</b></label>
+				<input type="text" placeholder="Enter Email" name="Email" required>
+
+				<label for="psw"><b>Password</b></label>
+				<input type="password" placeholder="Enter Password" name="psw" required>
+
+				<label for="psw-repeat"><b>Repeat Password</b></label>
+				<input type="password" placeholder="Repeat Password" name="psw-repeat" required>
+
+
+				<div class="clearfix">
+					<button type="button" onclick="document.getElementById('id01').style.display='none'"class="btn btn-lg btn-primary btn-block">Cancel</button> <br>
+					<button type="submit" class="btn btn-lg btn-primary btn-block" onclick="functionNext()">Sign Up</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</body>
+</html> 
