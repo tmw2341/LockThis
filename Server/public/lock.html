@@ -64,9 +64,23 @@
 
     function createTable(data)
     {
-      let lock = JSON.stringify(data[0])
-      console.log("<tr><td>" + lock + "</td></tr>");
-      $('#table').innerHTML = "<tr><td>" + data + "</td></tr>";
+      let lock = JSON.stringify(data);
+      let table = "";
+      for(let i = 0; i < data.length; i++)
+      {
+        table += createRow(data[i]);
+      }
+      $('#table').innerHTML = table;
+    }
+
+    function createRow(data)
+    {
+      //lock.id lock.description lock.status button;
+      let row = "<tr>";
+        row += "<td>";
+        row += data.id;
+        row += "</td>"
+      row += "</tr>";
     }
 
   </script>
