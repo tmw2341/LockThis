@@ -1,54 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
-	<title>Bootstrap Simple Registration Form</title>
+	
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
-	<link href="register.css">
 
+	<!-- jQuery library -->
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="register.css">
+
+	
+	
 </head>
-<body>
-	<div class="signup-form" style="text-align: center">
-		<form action="http://lockthis.ece.iastate.edu/user/add" method="post">
-			<h2 >Register</h2>
-			<br>
-			<div class="form-group">
-				
-				<div class="col-xs-6">
-					<label for="FirstName"> Name: 
-						<input type="text" class="form-control" name="first_name" placeholder="First Name" required="required">
-					</label>
-				</div>
-				
-				
-			</div>
-			<div class="form-group">
-				<label for="Email">Email: 
-					<input type="email" class="form-control" name="email" placeholder="Email" required="required">
-				</label>
-			</div>
-			<div class="form-group">
-				<label for="Password">Password: 
-					<input type="password" class="form-control" name="password" placeholder="Password" required="required">
-				</label>
-			</div>
-			<div class="form-group">
-				<label for="ConfirmPassword">Confirm Password: 
-					<input type="password" class="form-control" name="confirm_password" placeholder="Confirm Password" required="required">
-				</label>
-			</div>        
 
-			<div class="form-group">
-				<button type="submit" class="btn btn-success btn-lg btn-block">Register Now</button>
+<body> 
+	<div id="register" class="register"> 
+		<form class="register-form" method="POST"> 
+			<div class="container"> 
+				<h1> Smart Lock Registration </h1>
+				<p>Create an Account </p>
+				<label for="Name"><b>Name</b></label>
+				<input type="text" placeholder="Enter Name" name="name" id="name" required>
+
+				<label for="email"><b>Email</b></label>
+				<input type="text" placeholder="Enter Email" name="Email" id="email" required>
+
+
+				<label for="username"><b>Username</b></label>
+				<input type="text" placeholder="Enter Username" name="Username" id="username" required>
+
+				<label for="psw"><b>Password</b></label>
+				<input type="password" placeholder="Enter Password" name="psw" id = "password" required>
+
+				<label for="psw-repeat"><b>Repeat Password</b></label>
+				<input type="password" placeholder="Repeat Password" name="psw-repeat" id="cpassword" required>
+
+
+				<div class="clearfix">
+					<button type="button" onclick="functionBack()" class="btn btn-lg btn-primary btn-block">Cancel</button> <br>
+					<button type="button" class="btn btn-lg btn-primary btn-block" onclick="functionNext()">Sign Up</button>
+				</div>
 			</div>
 		</form>
-		<div class="text-center">Already have an account? <a href="sign_in.html">Sign in</a></div>
 	</div>
+
+	<script> 
+		function functionBack(){ 
+			location.href="sign_in.html"; 
+		}
+
+		function functionNext(){ 
+			
+			var password = document.getElementById("password").value;
+			var cpassword = document.getElementById("cpassword").value;
+			 
+			if(password == cpassword){
+				$.ajax({
+					url: 'http://lockthis.ece.iastate.edu:3000/user/add',
+					dataType: 'json' ,
+					type: 'post', 
+					contentType: 'application/json', 
+					data: JSON.stringify({
+						"name" : $('#name').val(), 
+						"email" : $('#email').val(), 
+						"username" : $('#username').val(),
+						"password" : $('#password').val(), 
+
+					}),
+					processData: false, 
+					success: function(data, textStatus, jQxhr){ 
+						console.log(data)
+					},
+					error: function(){ 
+						console.log("failed")
+					}
+
+				});
+			}else{ 
+				window.alert("Password does not match");
+			}
+			location.href = "sign_in.html"; 
+			
+			
+
+		}
+
+	</script>
+
+
+
 </body>
+
+
 </html>                            

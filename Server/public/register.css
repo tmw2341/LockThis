@@ -1,89 +1,108 @@
-
-body{
-	color: #fff;
-	background: url("images.jpg");
-	font-family: 'Roboto', sans-serif;
+body {font-family: Arial, Helvetica, sans-serif;}
+* {box-sizing: border-box}
+/* Full-width input fields */
+input[type=text], input[type=password] {
+    width: 100%;
+    padding: 15px;
+    margin: 5px 0 22px 0;
+    display: inline-block;
+    border: none;
+    background: #f1f1f1;
 }
 
-.form-control{
-	height: 40px;
-	box-shadow: none;
-	color: #969fa4;
+/* Add a background color when the inputs get focus */
+input[type=text]:focus, input[type=password]:focus {
+    background-color: #ddd;
+    outline: none;
 }
-.form-control:focus{
-	border-color: #5cb85c;
+
+/* Set a style for all buttons */
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    opacity: 0.9;
 }
-.form-control, .btn{        
-	border-radius: 3px;
+
+button:hover {
+    opacity:1;
 }
-.signup-form{
-	width: 400px;
-	margin: 0 auto;
-	padding: 30px 0;
+
+/* Extra styles for the cancel button */
+.cancelbtn {
+    padding: 14px 20px;
+    background-color: #f44336;
 }
-.signup-form h2{
-	color: #636363;
-	margin: 0 0 15px;
-	position: relative;
-	text-align: center;
+
+/* Float cancel and signup buttons and add an equal width */
+.cancelbtn, .signupbtn {
+  float: left;
+  width: 50%;
 }
-.signup-form h2:before, .signup-form h2:after{
-	content: "";
-	height: 2px;
-	width: 30%;
-	background: #d4d4d4;
-	position: absolute;
-	top: 50%;
-	z-index: 2;
-}	
-.signup-form h2:before{
-	left: 0;
+
+/* Add padding to container elements */
+.container {
+    padding: 16px;
 }
-.signup-form h2:after{
-	right: 0;
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: #474e5d;
+    padding-top: 50px;
 }
-.signup-form .hint-text{
-	color: #999;
-	margin-bottom: 30px;
-	text-align: center;
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
 }
-.signup-form form{
-	color: #999;
-	border-radius: 3px;
-	margin-bottom: 15px;
-	background: #f2f3f7;
-	box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
-	padding: 30px;
+
+/* Style the horizontal ruler */
+hr {
+    border: 1px solid #f1f1f1;
+    margin-bottom: 25px;
 }
-.signup-form .form-group{
-	margin-bottom: 20px;
+ 
+/* The Close Button (x) */
+.close {
+    position: absolute;
+    right: 35px;
+    top: 15px;
+    font-size: 40px;
+    font-weight: bold;
+    color: #f1f1f1;
 }
-.signup-form input[type="checkbox"]{
-	margin-top: 3px;
+
+.close:hover,
+.close:focus {
+    color: #f44336;
+    cursor: pointer;
 }
-.signup-form .btn{        
-	font-size: 16px;
-	font-weight: bold;		
-	min-width: 140px;
-	outline: none !important;
+
+/* Clear floats */
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
 }
-.signup-form .row div:first-child{
-	padding-right: 10px;
+
+/* Change styles for cancel button and signup button on extra small screens */
+@media screen and (max-width: 300px) {
+    .cancelbtn, .signupbtn {
+       width: 100%;
+    }
 }
-.signup-form .row div:last-child{
-	padding-left: 10px;
-}    	
-.signup-form a{
-	color: #fff;
-	text-decoration: underline;
-}
-.signup-form a:hover{
-	text-decoration: none;
-}
-.signup-form form a{
-	color: #5cb85c;
-	text-decoration: none;
-}	
-.signup-form form a:hover{
-	text-decoration: underline;
-}  
