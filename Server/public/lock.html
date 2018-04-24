@@ -87,7 +87,12 @@
           row += data.description;
         row += "</td>"
         row += "<td>"
-          row += data.status;
+          if(data.status == 0)
+          {
+            row += "UnLocked";
+          } else{
+            row += "Locked";
+          }
         row += "</td>"
         row += "<td>"
           row += "<button>UnLock</button>";
