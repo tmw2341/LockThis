@@ -64,8 +64,8 @@
 
     function createTable(data)
     {
-      let lock = JSON.stringify(data);
-      let result = "";
+      console.log("length: " + data.length);
+      var result = "";
       for(let i = 0; i < data.length; i++)
       {
         result += createRow(data[i]);
