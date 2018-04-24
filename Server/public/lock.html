@@ -12,6 +12,9 @@
   <div id="login">
     <button class="btn btn-lg btn-primary btn-block" onclick="getLocks()">View Locks</button>
   </div>
+  <div id="table" style="display:none">
+
+  </div>
   <script>
     function getLocks() {
 
@@ -42,6 +45,7 @@
           // console.log(Object.keys(myObject)[1]);
 
           var jsonData  = JSON.parse(data);
+          createTable(data);
           for(var i = 0; i < jsonData.length; i++){
             console.log(jsonData[0].stringify());
           }
@@ -50,6 +54,13 @@
           console.log("failed " + errorThrown);
         }
       })
+    }
+
+    function createTable(data)
+    {
+      let table_div = $('table');
+      table_div.show();
+      table_div.innerHTML = "test";
     }
   </script>
 </body>
