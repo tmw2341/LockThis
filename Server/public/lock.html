@@ -81,7 +81,16 @@
       //lock.id lock.description lock.status button;
       let row = "<tr>";
         row += "<td>";
-        row += data.id;
+          row += data.id;
+        row += "</td>"
+        row += "<td>"
+          row += data.description;
+        row += "</td>"
+        row += "<td>"
+          row += data.status;
+        row += "</td>"
+        row += "<td>"
+          row += "ToDo Button";
         row += "</td>"
       row += "</tr>";
       console.log("Row: " + row);
