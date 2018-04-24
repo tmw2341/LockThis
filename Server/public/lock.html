@@ -64,10 +64,11 @@
 
     function createTable(data)
     {
-      console.log("length: " + data.length);
+
       var result = "";
       for(let i = 0; i < data.length; i++)
       {
+        console.log("length: " + data.length);
         result += createRow(data[i]);
       }
       $('#table').innerHTML = table;
