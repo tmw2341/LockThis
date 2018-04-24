@@ -88,7 +88,7 @@ th, td {
         }),
         processData: false,
         success: function(data, textStatus, jQxhr) {
-          console.log("Toggle: " + data);
+          console.log("Toggle: " + JSON.stringify(data));
         },
         error: function(jqXhr, textStatus, errorThrown) {
           console.log("Toggle failed " + errorThrown);
