@@ -64,14 +64,14 @@
 
     function createTable(data)
     {
-
-      var result = "";
+      //lock.id lock.description lock.status button;
+      var result = "<tr><th>Lock ID</th><th>Description</th><th>Status</th><th></th></tr>";
       for(let i = 0; i < data.length; i++)
       {
         console.log("length: " + data.length);
         result += createRow(data[i]);
       }
-      $('#table').innerHTML = table;
+      document.getElementById("table").innerHTML = table;
       console.log("Table: " + result);
     }
 
