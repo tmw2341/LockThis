@@ -65,13 +65,13 @@
     function createTable(data)
     {
       let lock = JSON.stringify(data);
-      let table = "";
+      let result = "";
       for(let i = 0; i < data.length; i++)
       {
-        table += createRow(data[i]);
+        result += createRow(data[i]);
       }
       $('#table').innerHTML = table;
-      console.log("Table: " + table);
+      console.log("Table: " + result);
     }
 
     function createRow(data)
