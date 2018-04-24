@@ -46,8 +46,9 @@
           // var myObject = data;
           // console.log(Object.keys(myObject)[1]);
 
-          var jsonData  = JSON.parse(data);
           createTable(data);
+          var jsonData  = JSON.parse(data);
+
           for(var i = 0; i < jsonData.length; i++){
             console.log(jsonData[0].stringify());
           }
