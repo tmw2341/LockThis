@@ -64,7 +64,8 @@
 
     function createTable(data)
     {
-      console.log("<tr><td>" + JSON.stringify(data[0]) + "</td></tr>");
+      let lock = JSON.stringify(data[0])
+      console.log("<tr><td>" + lock + "</td></tr>");
       $('#table').innerHTML = "<tr><td>" + data + "</td></tr>";
     }
 
