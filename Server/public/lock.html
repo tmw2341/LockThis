@@ -71,6 +71,31 @@ th, td {
       })
     }
 
+    function toggleLockState(id) {
+      var x = sessionStorage.getItem("Username");
+      var y = sessionStorage.getItem("Password");
+
+      console.log("running Toggle")
+      $.ajax({
+        url: 'http://lockthis.ece.iastate.edu:3000/lock/toggle',
+        dataType: 'json',
+        type: 'post',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          "username": x,
+          "password": y,
+          "lock_id": id
+        }),
+        processData: false,
+        success: function(data, textStatus, jQxhr) {
+          console.log("Toggle: " + data);
+        },
+        error: function(jqXhr, textStatus, errorThrown) {
+          console.log("Toggle failed " + errorThrown);
+        }
+      })
+    }
+
     function createTable(data)
     {
       //lock.id lock.description lock.status button;
@@ -104,8 +129,8 @@ th, td {
           }
         row += "</td>"
         row += "<td>"
-          row += "<button>UnLock - ToDo</button>";
-          row += "<button>Lock - ToDo</button>"
+          row += "<button class='btn btn-lg btn-primary btn-block' onclick='toggleLockState("+data.id+")'>Lock</button>"
+          row += "<button class='btn btn-lg btn-primary btn-block' onclick='toggleLockState("+data.id+")'>Lock</button>"
         row += "</td>"
       row += "</tr>";
       console.log("Row: " + row);
