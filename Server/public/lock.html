@@ -38,7 +38,7 @@ th, td {
       var x = sessionStorage.getItem("Username");
       var y = sessionStorage.getItem("Password");
 
-      console.log("running")
+      console.log("running getLocks");
       $.ajax({
         url: 'http://lockthis.ece.iastate.edu:3000/user/locks',
         dataType: 'json',
@@ -54,8 +54,6 @@ th, td {
           $('#login').hide()
           // var myObject = data;
           // console.log(Object.keys(myObject)[1]);
-
-
           createTable(data.locks);
           return;
           var jsonData  = JSON.parse(data);
@@ -94,7 +92,10 @@ th, td {
           console.log("Toggle failed " + errorThrown);
         }
       })
-      getLocks();
+      statement1();
+        setTimeout(function() {
+            getLocks();
+        }, 500);
     }
 
     function createTable(data)
