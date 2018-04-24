@@ -12,8 +12,10 @@
   <div id="login">
     <button class="btn btn-lg btn-primary btn-block" onclick="getLocks()">View Locks</button>
   </div>
-  <div id="table" style="display:none">
+  <div>
+    <table id="tables">
 
+    </table>
   </div>
   <script>
     function getLocks() {
@@ -58,9 +60,9 @@
 
     function createTable(data)
     {
-      let table_div = $('table');
-      table_div.show();
-      table_div.innerHTML = "test";
+
+      $('#table').show();
+      $('#table').innerHTML = "test";
     }
   </script>
 </body>
